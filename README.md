@@ -12,4 +12,4 @@ The function plotter is by David Johnson-Davies http://www.technoblogy.com/show?
 
 The horizontal progress bar function is by Edward Mallon.
 
-<img src="https://github.com/EKMallon/Pro-Mini-Datalogger---Basic-Starter-Sketch/blob/master/images/2020_ClassroomLogger-Assembled_900pixw.jpg" height="372" width="640">
+<img src="https://github.com/EKMallon/Dual-ssd1306-OLED/blob/main/images/2020_dualOLEDscreens_ClassroomLoggerBuild_640px.jpg" height="372" width="640">
