@@ -2,6 +2,8 @@
 
 # Adding Dual ssd1306 OLED displays to your Arduino logger
 
+
+<img align="right" src="https://github.com/EKMallon/Dual-ssd1306-OLED/blob/main/images/DualOLEDscreens_1_300px.jpg" height="171" width="300">
 This is an mash up of different code concepts for Arduino projects using two 0.96" I2C screens to display text and graphic information simultaneously.
 It is primarily intended to provide extension exerciseses for students working with our 2020 'Classroom Logger' @  
 https://thecavepearlproject.org/2020/10/22/pro-mini-classroom-datalogger-2020-update/ 
