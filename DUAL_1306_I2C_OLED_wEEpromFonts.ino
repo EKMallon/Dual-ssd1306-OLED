@@ -19,7 +19,7 @@
 // after that ONE TIME comment out #define runONCE_addData2EEproms ->those functions are no longer needed:
 // because the bitmaps have already embedded in the 328p internal & AT24c32 eeprom memory
 
-//#define runONCE_addData2EEproms   
+#define runONCE_addData2EEproms   
 
 #include <Wire.h>
 #include <EEPROM.h>
@@ -268,8 +268,8 @@ const byte ASCII[][5] PROGMEM =
 ,{0x78, 0x46, 0x41, 0x46, 0x78} // 7f →  (decimal 127) // un-necessary?
 };
 
-//double size: 7 collumns x 3 rows fills the display  //this big #font requires 386 bytes of storage
-// for details on how I use this "two-pass" big # font see: 
+// double size: 7 collumns x 3 rows fills the display  //this big# font requires 386 bytes of storage
+// for details on how I use this "two-pass" big # font method see: 
 // https://thecavepearlproject.org/2018/05/18/adding-the-nokia-5110-lcd-to-your-arduino-data-logger/
 const byte Big11x16numberTops[][11] PROGMEM = {
   0x00,0x00,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x00,0x00, // Code for char -
@@ -303,9 +303,9 @@ const byte Big11x16numberBottoms[][11] PROGMEM = {
   0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x7F,0x7F, // Code for char 9
 };
 
-// 0,0 point of bitmap byte order is upper left corner (ie: with com&seg scan reversed)
-// to obtain a bitmap byte array, use graphic editor to make a 128x64 monochrome image, 
-// then convert that with an OLED Bitmap Converter eg: http://www.majer.ch/lcd/adf_bitmap.php 
+// bitmap byte order 0.0 is is upper left corner (ie: with com&seg scan reversed)
+// to replace this bitmap byte array, use graphic editor to make a 128x64 monochrome image, 
+// then convert that with an online Bitmap Converter eg: http://www.majer.ch/lcd/adf_bitmap.php 
 const uint8_t backgroundBitmap [] PROGMEM = {    // 128x64 bitmap
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -415,7 +415,7 @@ const uint8_t backgroundBitmap [] PROGMEM = {    // 128x64 bitmap
 #endif //  ============ #ifdef runONCE_addData2EEproms  =====================
 
 //this does complete clearing including that bottom row
-void ClearDisplay() { // works in horizontal or vertical mode //not page mode which would only clear 1 row
+void ClearDisplay() { // works in horizontal or vertical mode // NOT page mode which would only clear 1 row
 for (int col=0; col<128; col++) {
   Wire.beginTransmission(ssd1306_address);
   Wire.write(ssd1306_commandStream);
@@ -536,30 +536,29 @@ void ssd1306_HorizontalProgressBar(int8_t row,int percentComplete,int barColumnM
 // I have tweaked them slightly to provide dashed background lines & a bar graph
 //==============================================================================
 
-
 // Gaussian approximation
 int e (int x, int f, int m) {
   return (f * 256) / (256 + ((x - m) * (x - m)));
 }
 
-// Davids function uses Vertical addressing to plot the graph one line at a time
+// Davids function uses Vertical addressing to plot the graph one collumn at a time
 void PlotGraphPoint (int8_t x, int8_t y, int8_t mode, uint8_t dashSpace) {
   byte dotLinePixel=0;
   Wire.beginTransmission(ssd1306_address);
   Wire.write(ssd1306_commandStream);
   Wire.write(ssd1306_SET_ADDRESSING); 
   Wire.write(ssd1306_ADDRESSING_VERTICAL);
-  Wire.write(ssd1306_SET_COLUMN_RANGE); Wire.write(x); Wire.write(x);   // Column range - only writ in one collumn ata time
-  Wire.write(ssd1306_SET_PAGE_RANGE); Wire.write(0); Wire.write(7);   // writing to ALL Page range
+  Wire.write(ssd1306_SET_COLUMN_RANGE); Wire.write(x); Wire.write(x); // Column range - only writes in one collumn at a time
+  Wire.write(ssd1306_SET_PAGE_RANGE); Wire.write(0); Wire.write(7);   // writing to ALL vertical pages
   if (!mode){
     Wire.write(ssd1306_SET_CONTRAST);
-    Wire.write(0xFF);         //line only plots are helped with a brightness boost
+    Wire.write(0xFF);         //line only plots need the brightness boost
     }else{
     Wire.write(ssd1306_SET_CONTRAST);
-    Wire.write(0x7F);}        //use default for histogram
+    Wire.write(0x7F);}        //use default brightness for histogram
   Wire.endTransmission();
    
-  if (dashSpace>0){           // dashspacing between 3-5 looks good
+  if (dashSpace>0){                                // dashspacing between 3-5 looks good
     if (!(x%dashSpace)){dotLinePixel=0b00010000;}  //dotLinePixel gets OR'd in later
      else{dotLinePixel=0b00000000;}
    }
@@ -567,12 +566,12 @@ void PlotGraphPoint (int8_t x, int8_t y, int8_t mode, uint8_t dashSpace) {
   Wire.beginTransmission(ssd1306_address);
   Wire.write(ssd1306_dataStream);
   
-  for (uint8_t h=0; h<8; h++) {           // fill row bytes from top to bottom   
+  for (uint8_t h=0; h<8; h++) {                   // fill row bytes from top to bottom   
     if (y > 7) Wire.write((- mode)|dotLinePixel); // pixel not reached yet
-    else if (y < 0) Wire.write(0|dotLinePixel);   // y goes negative after point row is reached
+    else if (y < 0) Wire.write(0|dotLinePixel);   // y goes negative after row containing point is reached
     else if (mode) Wire.write(((1<<y) - mode)|dotLinePixel);  // histogram does not need thickening
     else Wire.write(((1<<y) - mode)|dotLinePixel|(1<<(y-1))- mode); 
-    //Note:  |(1<<(y-1))- mode)  makes the line two pixels thick - this can be removed for single line graph
+    //Note:  |(1<<(y-1))- mode)  makes the line graph two pixels thick - this can be removed for single line graph
     y = y - 8;
   }
   
@@ -660,8 +659,6 @@ void setup() {
 #ifdef runONCE_addData2EEproms
 //==========================================================
 //MOVE font data from progmem arrays into 328p EEprom memory
-//Store a subset of caps-only from the ascii set in the eeprom
-//filling the first 235 bytes  of the EEprom!
 
 int currentIntEEpromAddress=0; //eeprom memory pointer
 
@@ -708,7 +705,7 @@ for (int collumn = 0 ; collumn < 128; collumn++) {
           Wire.write((uint8_t)((addressPointer) & 0xFF)); // send the LSB of the address
           Wire.write((uint8_t)(pgm_read_byte(&backgroundBitmap[addressPointer])));//same pointer used for both
           Wire.endTransmission();  
-          delay(6);//slow eeprom needs time to write data! (reads are faster)  
+          delay(6);               //slow eeprom needs time to write data!
         }//row
  } //collumn    
 
@@ -768,11 +765,11 @@ void loop()
 
   // sample interval & time text above a large progress bar:
   oledSetTextXY(5, 0);
-  oledWriteString("15min 12:08P");        //populate this w read data from your RTC
+  oledWriteString("15min 12:08P");  // populate this string w real data from your RTC
   ssd1306_HorizontalProgressBar(1,33,26,96);
-  //(int8_t row,int percent,int graphColumnMin,int graphColumnMax )
+  //( row, percent,  graphColumnMin, graphColumnMax )
 
-  // axes labels along rt side for graph to be displayed on the second screen:
+  // axes labels along rt side of text screen for plot on the second screen:
   oledInvertText = true;
   oledSetTextXY(21, 0);
   oledWriteString("TEMP"); 
@@ -793,12 +790,12 @@ void loop()
   oledWriteString("|  -");
 
   // data displayed in large # font variables
-  // displaying large numbers on screen is a two pass process because font is split
+  // displaying large numbers on screen is a two-pass process because font is split
   float TempVariable= 27.1534;
   oledSetTextXY(0, 3);  
   oledWriteBigNumber(dtostrf(TempVariable,5,2,tmp),535);  //(string, memoffset)
   //235 is eep memory location of 'tops' for partial, 535 if you load the full ascii font
-  oledSetTextXY(0, 4); 
+  oledSetTextXY(0, 4);  // now print the bottom half of the number font in the next row
   oledWriteBigNumber(dtostrf(TempVariable,5,2,tmp),678); //dtostrf crops to two decimal digits
   oledSetTextXY(15, 3); 
   oledWriteString(";C"); //Note: degree symbol replaces ; character in font map
@@ -829,7 +826,7 @@ void loop()
   Wire.write(ssd1306_DISPLAY_SLEEP);
   Wire.write(ssd1306_SET_ADDRESSING);
   Wire.write(ssd1306_ADDRESSING_VERTICAL);
-  Wire.write(ssd1306_SET_COM_SCAN_DEFAULT); //compatiblity with Tiny Function Plotter:  http://www.technoblogy.com/show?2CFT
+  Wire.write(ssd1306_SET_COM_SCAN_DEFAULT); // for compatiblity with Tiny Function Plotter:  http://www.technoblogy.com/show?2CFT
   Wire.endTransmission();  
   ClearDisplay();
   Wire.beginTransmission(ssd1306_address);
