@@ -705,7 +705,7 @@ for (int collumn = 0 ; collumn < 128; collumn++) {
           Wire.write((uint8_t)((addressPointer) & 0xFF)); // send the LSB of the address
           Wire.write((uint8_t)(pgm_read_byte(&backgroundBitmap[addressPointer])));//same pointer used for both
           Wire.endTransmission();  
-          delay(6);               //slow eeprom needs time to write data!
+          delay(10);   //4k AT24c32 is a slow eeprom! needs time to write!
         }//row
  } //collumn    
 
